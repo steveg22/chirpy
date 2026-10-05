@@ -1,10 +1,11 @@
 -- +goose Up
-CREATE TABLE users (
+CREATE TABLE chirps (
   id uuid primary key default gen_random_uuid(),
   created_at timestamp not null default now(),
   updated_at timestamp not null default now(),
-  email text not null unique
+  body text not null,
+  user_id uuid not null references users(id) on delete cascade
 );
 
 -- +goose Down
-DROP TABLE users;
+DROP TABLE chirps;
