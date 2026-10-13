@@ -16,12 +16,13 @@ type apiConfig struct {
 	fileserverHits atomic.Int32
 	db             *database.Queries
 	platform       string
+	jwtSecret      string
 }
 
 func main() {
 	const filepathRoot = "."
 	const port = "8080"
-	//jwtSecret := os.Getenv("JWT_SECRET")
+	jwtSecret := os.Getenv("JWT_SECRET")
 
 	godotenv.Load()
 	dbURL := os.Getenv("DB_URL")
@@ -44,6 +45,7 @@ func main() {
 		fileserverHits: atomic.Int32{},
 		db:             dbQueries,
 		platform:       os.Getenv("PLATFORM"),
+		jwtSecret:      jwtSecret,
 	}
 
 	mux := http.NewServeMux()
