@@ -21,6 +21,7 @@ type apiConfig struct {
 func main() {
 	const filepathRoot = "."
 	const port = "8080"
+	//jwtSecret := os.Getenv("JWT_SECRET")
 
 	godotenv.Load()
 	dbURL := os.Getenv("DB_URL")
