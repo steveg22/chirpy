@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"net/http"
@@ -18,6 +20,27 @@ const (
 	// TokenTypeAccess -
 	TokenTypeAccess TokenType = "chirpy-access"
 )
+
+// ErrNoAuthHeaderIncluded -
+var ErrNoAuthHeaderIncluded = errors.New("no auth header included in request")
+
+// HashPassword -
+func HashPassword(password string) (string, error) {
+	hash, err := argon2id.CreateHash(password, argon2id.DefaultParams)
+	if err != nil {
+		return "", err
+	}
+	return hash, nil
+}
+
+// CheckPasswordHash -
+func CheckPasswordHash(password, hash string) (bool, error) {
+	match, err := argon2id.ComparePasswordAndHash(password, hash)
+	if err != nil {
+		return false, err
+	}
+	return match, nil
+}
 
 // MakeJWT -
 func MakeJWT(
@@ -67,27 +90,6 @@ func ValidateJWT(tokenString, tokenSecret string) (uuid.UUID, error) {
 	return id, nil
 }
 
-// ErrNoAuthHeaderIncluded -
-var ErrNoAuthHeaderIncluded = errors.New("no auth header included in request")
-
-// HashPassword -
-func HashPassword(password string) (string, error) {
-	hash, err := argon2id.CreateHash(password, argon2id.DefaultParams)
-	if err != nil {
-		return "", err
-	}
-	return hash, nil
-}
-
-// CheckPasswordHash -
-func CheckPasswordHash(password, hash string) (bool, error) {
-	match, err := argon2id.ComparePasswordAndHash(password, hash)
-	if err != nil {
-		return false, err
-	}
-	return match, nil
-}
-
 // GetBearerToken -
 func GetBearerToken(headers http.Header) (string, error) {
 	authHeader := headers.Get("Authorization")
@@ -100,4 +102,12 @@ func GetBearerToken(headers http.Header) (string, error) {
 	}
 
 	return splitAuth[1], nil
+}
+
+// MakeRefreshToken makes a random 256 bit token
+// encoded in hex
+func MakeRefreshToken() string {
+	token := make([]byte, 32)
+	rand.Read(token)
+	return hex.EncodeToString(token)
 }
